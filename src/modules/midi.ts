@@ -4,7 +4,13 @@ const octaves: string[] = ['C,,,,', 'C,,,', 'C,,', 'C,', 'C', 'c', "c'", "c''", 
 const octaveMiddle: number = 60 // Middle C 
 const firstNote: number = 21 // A0
 const lastNote : number = 108 // C8
-export function midiNumberToAbcNoteName(n: number): string {
+
+// TODO: keySignature determines abcnotenames. e.g. in D, 
+// type keySignature = 'C' | 'D' | 'Dmin' 
+
+// const noteNameIndex: string[] = []
+
+export function midiNumberToAbcNoteName(n: number/*, keySig: number*/): string {
     if (n < firstNote || n > lastNote) {
         return 'C,,,,' // still return something, but obviously outside the keyboard
     }
@@ -18,7 +24,13 @@ export function midiNumberToAbcNoteName(n: number): string {
 }
 
 export function slotToAbcDuration(slots: number, beatsPerMeasure: number, defaultBeatDurationInSlots: number): string {
-    return `${slots}`
+    if (slots === defaultBeatDurationInSlots) {
+        return ''
+    }
+    if (slots % defaultBeatDurationInSlots === 0) {
+        return `${slots / defaultBeatDurationInSlots}`
+    }
+    return `${slots}/${defaultBeatDurationInSlots}`
 }
 
 export type Note = {
