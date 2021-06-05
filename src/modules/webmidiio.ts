@@ -196,8 +196,8 @@ export function createMidiProcessor() : MidiProcessor {
     }
     return {
         switchInputOutput: (inputDeviceName: string, outputDeviceName: string) => {
-            let newInput = currentInput
-            let newOutput = currentOutput
+            let newInput = undefined
+            let newOutput = undefined
             WebMidi.inputs.forEach(element => {
                 if (element.name === inputDeviceName){
                     newInput = element
@@ -244,7 +244,7 @@ export function createMidiProcessor() : MidiProcessor {
         },
         installedModule: (): MidiProcessModule[] => {
             // TODO:
-            return []
+            return modules
         },
         availableModule: (): string[] => {
             return keys(gMidiProcessFactory)

@@ -34,6 +34,22 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 type MidiProcessModulesProps = {
     processor: MidiProcessor | undefined
 }
+type MidiProcessModuleProps = {
+    processor: MidiProcessor | undefined
+    moduleName: string
+    installed: boolean
+    onChange: (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void
+}
+const MidiProcessModule :  React.FC<MidiProcessModuleProps> = (props) => {{
+    return (
+    <>
+        <FormControlLabel
+            control={<Checkbox checked={props.installed} onChange={props.onChange} name={props.moduleName}/>}
+            label={props.moduleName}
+        />
+    </>
+)}
+}
 
 const MidiProcessModules : React.FC<MidiProcessModulesProps> = (props) => {
     const classes = useStyles()
@@ -47,6 +63,7 @@ const MidiProcessModules : React.FC<MidiProcessModulesProps> = (props) => {
     const id = open ? 'simple-popover' : undefined
     const [inputDeviceName, setInputDeviceName] = React.useState('')
     const [outputDeviceName, setOutputDeviceName] = React.useState('')
+    const [installedModules, setInstalledModules] = React.useState<string[]>([])
   
     const handleInputDeviceNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInputDeviceName(event.target.value)
@@ -58,6 +75,19 @@ const MidiProcessModules : React.FC<MidiProcessModulesProps> = (props) => {
         setAnchorEl(null)
         props.processor?.switchInputOutput(inputDeviceName, outputDeviceName)
     }
+    const handleChange = React.useCallback((moduleName: string, e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+        if (props.processor) {
+            const processor = props.processor
+            if (checked) {
+                processor.installModule(moduleName)
+
+            } else {
+                processor.uninstallModule(moduleName)
+            }
+            let installedModules = processor.installedModule().map((m) => m.name)
+            setInstalledModules(installedModules)
+        }
+    }, [props.processor])
     return(
         <>
         <Button onClick={handleClick}
@@ -82,23 +112,13 @@ const MidiProcessModules : React.FC<MidiProcessModulesProps> = (props) => {
         <FormControl component="fieldset">
             <FormLabel component="legend">MIDI process modules:</FormLabel>
             <FormGroup>
-            {props.processor?.availableModule().map(moduleName => {
-                const moduleIsInstalled = props.processor?.installedModule().find((m) => m.name == moduleName) !== undefined
-                const handleChange = (e: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
-                    if (checked) {
-                        props.processor?.installModule(moduleName)
-                    } else {
-                        props.processor?.uninstallModule(moduleName)
-                    }
-                }
-                return (
-                <>
-                    <FormControlLabel
-                        control={<Checkbox checked={moduleIsInstalled} onChange={handleChange} name={moduleName}/>}
-                        label={moduleName}
-                    />
-                </>
-            )})}
+            {props.processor?.availableModule().map(moduleName => (
+                <MidiProcessModule
+                    processor={props.processor}
+                    moduleName={moduleName}
+                    installed={installedModules.indexOf(moduleName) !== -1}
+                    onChange={handleChange.bind(this, moduleName)}
+                />))}
             </FormGroup>
         </FormControl>
       </Popover>

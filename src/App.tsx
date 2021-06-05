@@ -2,6 +2,8 @@ import './App.css';
 import Sheet from './views/Sheet'
 import { createMidiProcessor, MidiProcessor } from './modules/webmidiio'
 import { createRecorder, MidiRecorderModule } from './modules/recorder'
+import { createMetronome, MidiMetronomeModule } from './modules/metronome'
+
 import React, { useEffect } from 'react'
 import {isEqual, minBy, join} from 'lodash'
 import MidiDevices from './views/MidiDevices'
@@ -15,13 +17,17 @@ function App() {
   
   const [midiProcessor, setMidiProcessor] = React.useState<undefined | MidiProcessor>(undefined)
   const [recorder, setRecorder] = React.useState<undefined | MidiRecorderModule>(undefined)
+  const [metronome, setMetronome] = React.useState<undefined | MidiMetronomeModule>(undefined)
   useEffect(() => {
     let newProcessor = createMidiProcessor()
-    let recorder = newProcessor.installModule<MidiRecorderModule>('recorder')
+    let aRecorder = newProcessor.installModule<MidiRecorderModule>('recorder')
+    let aMetronome = newProcessor.installModule<MidiMetronomeModule>('metronome', {beats: [0.25, 0.1, 0.15, 0.1], notes: ["C3", "G2", "A2", "G2"], bpm: 60})
     setMidiProcessor(newProcessor)
-    setRecorder(recorder)
+    setRecorder(aRecorder)
+    setMetronome(aMetronome)
     return () => {
       setRecorder(undefined)
+      setMetronome(undefined)
       setMidiProcessor(undefined)
       newProcessor.destroy()
     }
@@ -30,6 +36,7 @@ function App() {
   const [sequence, setSequence] = React.useState<Note[]>([])
   const recordStart = () => {
     recorder?.start()
+    metronome?.start()
   }
   const [sequenceBeginTime, setSequenceBeginTime] = React.useState(0)
   useEffect(()=>{
@@ -52,11 +59,11 @@ function App() {
     }
   }, [recorder])
   const [abcNotation, setAbcNotation] = React.useState(`X: 1
-T: Cooley's
+T: Test
 M: 4/4
 L: 1/8
 R: reel
-K: Emin
+K: D
 |:D2|EB{c}BA B2 EB|~B2 AB dBAG|FDAD BDAD|FDAD dAFD|
 EBBA B2 EB|B2 AB defg|afe^c dBAF|DEFD E2:|
 |:gf|eB B2 efge|eB B2 gedB|A2 FA DAFA|A2 FA defg|
